@@ -525,7 +525,7 @@ jobs:
           fail_on_unmatched_files: false
 
   virustotal-draft:
-    if: ${{ inputs.upload-artifact }}
+    if: ${{ false }}  # no virustotal key
     needs: [update-draft]
     uses: ./.github/workflows/virustotal_scan.yml
     secrets: inherit
@@ -587,7 +587,7 @@ jobs:
           track: 'beta'
 
   virustotal-release:
-    if: ${{ inputs.upload-artifact && inputs.tag-name != 'draft' }}
+    if: ${{ false }}  # no virustotal key
     needs: [upload-release]
     uses: ./.github/workflows/virustotal_scan.yml
     secrets: inherit
@@ -602,7 +602,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-    if: ${{ inputs.upload-artifact }}
+    if: ${{ false }}  # no app store connect key
     runs-on: macos-26
     timeout-minutes: 60
     steps:

@@ -5,7 +5,19 @@
 name: VirusTotal Scan
 
 on:
-  workflow_dispatch:  # no auto triggers, they need upstream secrets
+  workflow_call:
+    inputs:
+      release_tag:
+        description: 'Release tag to scan (e.g. draft, v1.2.3)'
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to scan'
+        required: true
+        type: string
+
 jobs:
   virustotal_scan:
     permissions:
