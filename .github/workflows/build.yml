@@ -19,20 +19,20 @@ env:
   NDK_VERSION: r28c
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   TAG_NAME: "${{ inputs.tag-name }}"
-  TARGET_NAME_gz: "Hiddify-Linux-x64-AppImage.tar"
-  TARGET_NAME_AppImage: "Hiddify-Linux-x64-AppImage"
-  TARGET_NAME_deb: "Hiddify-Debian-x64"
-  # TARGET_NAME_rpm: "Hiddify-rpm-x64"
-  TARGET_NAME_apk: "Hiddify-Android"
-  TARGET_NAME_aab: "Hiddify-Android"
-  TARGET_NAME_exe: "Hiddify-Windows-Setup-x64"
-  TARGET_NAME_msix: "Hiddify-Windows-x64"
-  TARGET_NAME_zip: "Hiddify-Windows-Portable-x64"
-  TARGET_NAME_dmg: "Hiddify-MacOS"
-  TARGET_NAME_pkg: "Hiddify-MacOS-Installer"
-  TARGET_NAME_macos_appstore_pkg: "Hiddify-MacOS-AppStore"
-  TARGET_NAME_macos_appstore_dmg: "Hiddify-MacOS-AppStore"
-  TARGET_NAME_ipa: "Hiddify-iOS"
+  TARGET_NAME_gz: "RefresherVPN-Linux-x64-AppImage.tar"
+  TARGET_NAME_AppImage: "RefresherVPN-Linux-x64-AppImage"
+  TARGET_NAME_deb: "RefresherVPN-Debian-x64"
+  # TARGET_NAME_rpm: "RefresherVPN-rpm-x64"
+  TARGET_NAME_apk: "RefresherVPN-Android"
+  TARGET_NAME_aab: "RefresherVPN-Android"
+  TARGET_NAME_exe: "RefresherVPN-Windows-Setup-x64"
+  TARGET_NAME_msix: "RefresherVPN-Windows-x64"
+  TARGET_NAME_zip: "RefresherVPN-Windows-Portable-x64"
+  TARGET_NAME_dmg: "RefresherVPN-MacOS"
+  TARGET_NAME_pkg: "RefresherVPN-MacOS-Installer"
+  TARGET_NAME_macos_appstore_pkg: "RefresherVPN-MacOS-AppStore"
+  TARGET_NAME_macos_appstore_dmg: "RefresherVPN-MacOS-AppStore"
+  TARGET_NAME_ipa: "RefresherVPN-iOS"
   
 
 jobs:
@@ -79,13 +79,14 @@ jobs:
         include:
           - { platform: android-apk,       os: ubuntu-latest,  targets: apk }
           # - { platform: android-aab,       os: ubuntu-latest,  targets: aab }
-          - { platform: windows,          os: windows-latest, aarch: amd64,     targets: exe,msix,zip }
-          - { platform: linux,            os: ubuntu-22.04,   aarch: amd64,     targets: deb,gz,AppImage }
+          # android only, desktop builds need signing secrets
+          # - { platform: windows,          os: windows-latest, aarch: amd64,     targets: exe,msix,zip }
+          # - { platform: linux,            os: ubuntu-22.04,   aarch: amd64,     targets: deb,gz,AppImage }
           # - { platform: linux-amd64,      os: ubuntu-22.04,   aarch: amd64,     targets: deb,gz }
           # - { platform: linux-arm64,      os: ubuntu-24.04-arm, aarch: arm64,   targets: deb,gz }
           # - { platform: linux-amd64-musl, os: ubuntu-22.04,   aarch: amd64,     targets: deb,gz }
           # - { platform: linux-arm64-musl, os: ubuntu-24.04-arm, aarch: arm64,   targets: deb,gz }
-          - { platform: macos,            os: macos-15,       aarch: universal, targets: dmg,pkg }
+          # - { platform: macos,            os: macos-15,       aarch: universal, targets: dmg,pkg }
           # - { platform: macos-appstore,   os: macos-26,       aarch: universal, targets: pkg,dmg }
           # - { platform: ios,              os: macos-26,       aarch: universal, filename: hiddify-ios, targets: ipa }
     runs-on: ${{ matrix.os }}
@@ -234,7 +235,10 @@ jobs:
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
       - name: Setup Android Signing Properties
-        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'android') }}
+        # skip without a keystore secret, gradle signs with the debug key then
+        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'android') && env.HAS_ANDROID_KEY == 'true' }}
+        env:
+          HAS_ANDROID_KEY: ${{ secrets.ANDROID_SIGNING_KEY != '' }}
         run: |
           echo "${{ secrets.ANDROID_SIGNING_KEY }}" | base64 --decode > android/key.jks
           echo "storeFile=$(pwd)/android/key.jks" > android/key.properties
